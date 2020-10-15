@@ -1,6 +1,7 @@
 package gocl
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"testing"
@@ -46,4 +47,32 @@ func TestInvert(t *testing.T) {
 			}
 		}
 	}
+}
+
+func ExampleExecuteImage_invert() {
+	var kernelSource = `
+	__kernel void invert(
+		__read_only image2d_t in,
+		const int width,
+		const int height,
+		__write_only image2d_t out)
+	{
+		const int2 pos = (int2)(get_global_id(0), get_global_id(1));
+		float4 pixel = (float4)(0);
+		if ((pos.x < width) && (pos.y < height)) {
+			pixel = read_imagef(in, pos);
+			pixel = (float4)(1) - pixel;
+			write_imagef(out, pos, pixel);
+		}
+	}`
+	// Created all-black image, 7x7
+	inImg := image.NewRGBA(image.Rect(0, 0, 7, 7))
+	b := inImg.Bounds()
+	//  Calculate, now you have all-white image
+	outImg, err := ExecuteImage(kernelSource, "invert", 0, 0, inImg, int32(b.Dx()), int32(b.Dy()))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(outImg.Pix)
+	// Output: [255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255]
 }
