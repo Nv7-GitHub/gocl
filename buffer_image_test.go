@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestOpenCLLayer(t *testing.T) {
+func TestBufferImage(t *testing.T) {
 	file, err := os.Open("gopher.png")
 	if err != nil {
 		panic(err)

@@ -109,14 +109,13 @@ func (b *Buffer) GetDataImage() (image.Image, error) {
 	return final, nil
 }
 
-func (p *Program) NewBufferFromArr(data []interface{}) (*Buffer, error) {
-	arg, err := p.ctx.CreateEmptyBuffer(cl.MemReadOnly, 4*len(data))
+func (p *Program) NewBufferFromArr(size int, dataPtr unsafe.Pointer, length int) (*Buffer, error) {
+	arg, err := p.ctx.CreateEmptyBuffer(cl.MemReadOnly, 4*length)
 	if err != nil {
 		return nil, err
 	}
 
-	dataPtr := unsafe.Pointer(&data[0])
-	dataSize := int(unsafe.Sizeof(data[0])) * len(data)
+	dataSize := size * length
 	_, err = p.queue.EnqueueWriteBuffer(arg, true, 0, dataSize, dataPtr, nil)
 	if err != nil {
 		return nil, err
@@ -125,14 +124,12 @@ func (p *Program) NewBufferFromArr(data []interface{}) (*Buffer, error) {
 	return &Buffer{
 		queue:  p.queue,
 		obj:    arg,
-		length: len(data),
+		length: length,
 	}, nil
 }
 
-func (b *Buffer) GetDataArr(out []interface{}) error {
+func (b *Buffer) GetDataArr(dataSize int, dataPtr unsafe.Pointer, length int) error {
 	// Out must be same length as input
-	dataPtr := unsafe.Pointer(&out[0])
-	dataSize := int(unsafe.Sizeof(out[0])) * len(out)
-	_, err := b.queue.EnqueueReadBuffer(b.obj, true, 0, dataSize, dataPtr, nil)
+	_, err := b.queue.EnqueueReadBuffer(b.obj, true, 0, dataSize*length, dataPtr, nil)
 	return err
 }
