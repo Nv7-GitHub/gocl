@@ -38,7 +38,7 @@ func (p *Program) NewEmptyFloat32Arr(length int) (*Buffer, error) {
 	}, nil
 }
 
-func (p *Program) NewBufferFromFloat32Arr(data []float32) (*Buffer, error) {
+func (p *Program) NewBufferFromFloatArr(data []float32) (*Buffer, error) {
 	arg, err := p.ctx.CreateEmptyBuffer(cl.MemReadWrite, 4*len(data))
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (p *Program) NewBufferFromFloat32Arr(data []float32) (*Buffer, error) {
 	}, nil
 }
 
-func (b *Buffer) GetDataFloat32Arr() ([]float32, error) {
+func (b *Buffer) GetDataFloatArr() ([]float32, error) {
 	results := make([]float32, b.length)
 	_, err := b.queue.EnqueueReadBufferFloat32(b.obj, true, 0, results, nil)
 	if err != nil {
@@ -109,8 +109,47 @@ func (b *Buffer) GetDataImage() (image.Image, error) {
 	return final, nil
 }
 
+func (p *Program) NewBufferFromIntArr(data []int32) (*Buffer, error) {
+	ptr := unsafe.Pointer(&data[0])
+	size := int(unsafe.Sizeof(data[0]))
+
+	return p.NewBufferFromArr(size, ptr, len(data))
+}
+
+func (b *Buffer) GetDataIntArr() ([]int32, error) {
+	results := make([]int32, b.length)
+	err := b.GetDataArr(int(unsafe.Sizeof(results[0])), unsafe.Pointer(&results[0]))
+	return results, err
+}
+
+func (p *Program) NewBufferFromInt(data int32) (*Buffer, error) {
+	ptr := unsafe.Pointer(&data)
+	size := int(unsafe.Sizeof(data))
+
+	return p.NewBufferFromData(size, ptr)
+}
+
+func (b *Buffer) GetDataInt() (int32, error) {
+	var out int32
+	err := b.GetData(int(unsafe.Sizeof(out)), unsafe.Pointer(&out))
+	return out, err
+}
+
+func (p *Program) NewBufferFromFloat(data float32) (*Buffer, error) {
+	ptr := unsafe.Pointer(&data)
+	size := int(unsafe.Sizeof(data))
+
+	return p.NewBufferFromData(size, ptr)
+}
+
+func (b *Buffer) GetDataFloat() (float32, error) {
+	var out float32
+	err := b.GetData(int(unsafe.Sizeof(out)), unsafe.Pointer(&out))
+	return out, err
+}
+
 func (p *Program) NewBufferFromArr(size int, dataPtr unsafe.Pointer, length int) (*Buffer, error) {
-	arg, err := p.ctx.CreateEmptyBuffer(cl.MemReadOnly, 4*length)
+	arg, err := p.ctx.CreateEmptyBuffer(cl.MemReadOnly, size*length)
 	if err != nil {
 		return nil, err
 	}
@@ -128,8 +167,31 @@ func (p *Program) NewBufferFromArr(size int, dataPtr unsafe.Pointer, length int)
 	}, nil
 }
 
-func (b *Buffer) GetDataArr(dataSize int, dataPtr unsafe.Pointer, length int) error {
+func (b *Buffer) GetDataArr(dataSize int, dataPtr unsafe.Pointer) error {
 	// Out must be same length as input
-	_, err := b.queue.EnqueueReadBuffer(b.obj, true, 0, dataSize*length, dataPtr, nil)
+	_, err := b.queue.EnqueueReadBuffer(b.obj, true, 0, dataSize*b.length, dataPtr, nil)
+	return err
+}
+
+func (p *Program) NewBufferFromData(size int, dataPtr unsafe.Pointer) (*Buffer, error) {
+	arg, err := p.ctx.CreateEmptyBuffer(cl.MemReadOnly, size)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.queue.EnqueueWriteBuffer(arg, true, 0, size, dataPtr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Buffer{
+		queue: p.queue,
+		obj:   arg,
+	}, nil
+}
+
+func (b *Buffer) GetData(dataSize int, dataPtr unsafe.Pointer) error {
+	// Out must be same length as input
+	_, err := b.queue.EnqueueReadBuffer(b.obj, true, 0, dataSize, dataPtr, nil)
 	return err
 }

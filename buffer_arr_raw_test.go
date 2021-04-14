@@ -6,7 +6,7 @@ import (
 	"unsafe"
 )
 
-func TestStructs(t *testing.T) {
+func TestArrBuffer(t *testing.T) {
 	var kernelSource = `
 __kernel void square(
 	__global int * in,
@@ -52,7 +52,7 @@ __kernel void square(
 	}
 
 	results := make([]int32, len(input))
-	err = out.GetDataArr(int(unsafe.Sizeof(results[0])), unsafe.Pointer(&results[0]), len(results))
+	err = out.GetDataArr(int(unsafe.Sizeof(results[0])), unsafe.Pointer(&results[0]))
 	if err != nil {
 		t.Fatal(err)
 	}
