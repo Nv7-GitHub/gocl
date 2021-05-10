@@ -6,21 +6,32 @@ import (
 	"unsafe"
 )
 
-func TestArrBuffer(t *testing.T) {
+type Data struct {
+	x int32
+	y int32
+}
+
+func TestArrBufferStruct(t *testing.T) {
 	var kernelSource = `
+typedef struct data {
+	int x;
+	int y;
+};
+
 __kernel void square(
-	__global int * in,
+	__global struct data * in,
 	const unsigned int count,
 	__global int * out) 
 {
 	int i = get_global_id(0);
 	if (i < count)
-		out[i] = in[i] * in[i];
+		out[i] = in[i].x * in[i].y;
 }
 `
-	input := make([]int32, 1024)
+	input := make([]Data, 1024)
 	for i := 0; i < len(input); i++ {
-		input[i] = rand.Int31()
+		input[i].x = rand.Int31n(100)
+		input[i].y = rand.Int31n(100)
 	}
 
 	prog, err := NewProgram(kernelSource, "square", 0, 0, DeviceTypeAll)
@@ -58,8 +69,8 @@ __kernel void square(
 	}
 
 	for i, val := range input {
-		if results[i] != val*val {
-			t.Fatalf("Square not calculated correctly. Expected: %d, Got: %d", val*val, results[i])
+		if results[i] != val.x*val.y {
+			t.Fatalf("Square not calculated correctly. Expected: %d, Got: %d", val.x*val.y, results[i])
 		}
 	}
 }

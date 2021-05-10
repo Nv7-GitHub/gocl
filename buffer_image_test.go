@@ -34,7 +34,7 @@ func TestBufferImage(t *testing.T) {
 		}
 	}`
 
-	prog, err := NewProgram(kernelSource, "invert", 0, 0)
+	prog, err := NewProgram(kernelSource, "invert", 0, 0, DeviceTypeAll)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestBufferImage(t *testing.T) {
 	}
 	defer out.Cleanup()
 
-	err = prog.Execute([]int{img.Bounds().Dx(), img.Bounds().Dy()}, input, out)
+	err = prog.Execute([]int{img.Bounds().Dx(), img.Bounds().Dy()}, []int{1, 1}, input, out)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -14,7 +14,7 @@ __kernel void square(
 	out[0] = in[0] * in[0];
 }
 `
-	prog, err := NewProgram(kernelSource, "square", 0, 0)
+	prog, err := NewProgram(kernelSource, "square", 0, 0, DeviceTypeAll)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +31,7 @@ __kernel void square(
 		t.Fatal(err)
 	}
 
-	err = prog.Execute([]int{1}, buff, out)
+	err = prog.Execute([]int{1}, []int{1}, buff, out)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ __kernel void square(
 	out[0] = in[0] * in[0];
 }
 `
-	prog, err := NewProgram(kernelSource, "square", 0, 0)
+	prog, err := NewProgram(kernelSource, "square", 0, 0, DeviceTypeAll)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +72,7 @@ __kernel void square(
 		t.Fatal(err)
 	}
 
-	err = prog.Execute([]int{1}, buff, out)
+	err = prog.Execute([]int{1}, []int{1}, buff, out)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -22,7 +22,7 @@ __kernel void square(
 		input[i] = rand.Float32()
 	}
 
-	prog, err := NewProgram(kernelSource, "square", 0, 0)
+	prog, err := NewProgram(kernelSource, "square", 0, 0, DeviceTypeAll)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ __kernel void square(
 		t.Fatal(err)
 	}
 
-	err = prog.Execute([]int{len(input)}, buff, length, out)
+	err = prog.Execute([]int{len(input)}, []int{1}, buff, length, out)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ __kernel void square(
 
 	t.ResetTimer()
 
-	prog, err := NewProgram(kernelSource, "square", 0, 0)
+	prog, err := NewProgram(kernelSource, "square", 0, 0, DeviceTypeAll)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,7 +100,7 @@ __kernel void square(
 		t.Fatal(err)
 	}
 
-	err = prog.Execute([]int{len(input)}, buff, length, out)
+	err = prog.Execute([]int{len(input)}, []int{1}, buff, length, out)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ __kernel void square(
 		input[i] = int32(rand.Int())
 	}
 
-	prog, err := NewProgram(kernelSource, "square", 0, 0)
+	prog, err := NewProgram(kernelSource, "square", 0, 0, DeviceTypeAll)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -155,7 +155,7 @@ __kernel void square(
 		t.Fatal(err)
 	}
 
-	err = prog.Execute([]int{len(input)}, buff, length, out)
+	err = prog.Execute([]int{len(input)}, []int{1}, buff, length, out)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -191,7 +191,7 @@ __kernel void square(
 
 	t.ResetTimer()
 
-	prog, err := NewProgram(kernelSource, "square", 0, 0)
+	prog, err := NewProgram(kernelSource, "square", 0, 0, DeviceTypeAll)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +214,7 @@ __kernel void square(
 		t.Fatal(err)
 	}
 
-	err = prog.Execute([]int{len(input)}, buff, length, out)
+	err = prog.Execute([]int{len(input)}, []int{1}, buff, length, out)
 	if err != nil {
 		t.Fatal(err)
 	}

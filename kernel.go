@@ -1,12 +1,10 @@
 package gocl
 
 import (
-	"math"
-
 	"github.com/Nv7-Github/go-cl"
 )
 
-func NewProgram(src string, kernelName string, platform, device int) (*Program, error) {
+func NewProgram(src string, kernelName string, platform, device int, kind cl.DeviceType) (*Program, error) {
 	platforms, err := cl.GetPlatforms()
 	if err != nil {
 		return nil, err
@@ -14,7 +12,7 @@ func NewProgram(src string, kernelName string, platform, device int) (*Program, 
 
 	p := platforms[platform]
 
-	devices, err := p.GetDevices(cl.DeviceTypeAll)
+	devices, err := p.GetDevices(cl.DeviceType(kind))
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +66,7 @@ type Program struct {
 }
 
 // Execute executes the kernel. The length should be the [width, height] for an image and [length] for an array.
-func (p *Program) Execute(length []int, args ...Argument) error {
+func (p *Program) Execute(length []int, local []int, args ...Argument) error {
 	ars := make([]interface{}, len(args))
 	for i, val := range args {
 		ars[i] = val.val()
@@ -78,17 +76,28 @@ func (p *Program) Execute(length []int, args ...Argument) error {
 		return err
 	}
 
-	local, err := p.kernel.PreferredWorkGroupSizeMultiple(p.d)
-	if err != nil {
-		return err
-	}
-	local = int(math.Floor(math.Sqrt(float64(local))))
-
-	_, err = p.queue.EnqueueNDRangeKernel(p.kernel, nil, length, []int{local, local}, nil)
+	_, err = p.queue.EnqueueNDRangeKernel(p.kernel, nil, length, local, nil)
 	if err != nil {
 		return err
 	}
 
 	err = p.queue.Finish()
 	return err
+}
+
+// PrefferedWorkGroupSize gets the preferred OpenCL local work group size
+func (p *Program) PreferredWorkGroupSize() (int, error) {
+	size, err := p.kernel.PreferredWorkGroupSizeMultiple(p.d)
+	return size, err
+}
+
+// MaxWorkGroupSize gets the maximum OpenCL work group size for the kernel
+func (p *Program) MaxWorkGroupSize() (int, error) {
+	size, err := p.kernel.WorkGroupSize(p.d)
+	return size, err
+}
+
+// DeviceWorkGroupSize gets the device's maximum OpenCL work group size for the kernel
+func (p *Program) DeviceWorkGroupSize() int {
+	return p.d.MaxWorkGroupSize()
 }

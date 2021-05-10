@@ -1,4 +1,4 @@
-module github.com/Nv7-Github/gocl
+module github.com/Nv7-Github/gocl/v2
 
 go 1.15
 
